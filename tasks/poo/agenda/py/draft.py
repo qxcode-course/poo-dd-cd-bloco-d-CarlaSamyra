@@ -32,6 +32,11 @@ class Contato:
         fone = Fone(id, number)
         if fone.isValid():
             self.__fones.append(fone)
+        
+    def rmFone (self, index: int):
+        if 0 <= index and index < len(self.__fones):
+            self.__fones.pop(index)
+            return
 
 class Agenda:
     def __init__ (self):
@@ -41,24 +46,43 @@ class Agenda:
         sorted_contato = sorted(self.__contatos, key=lambda c: c.get_name())
         return "\n".join(str(i) for i in sorted_contato)
     
-    def get_contato (self):
-        return self.__contatos
+    def getContato (self, name:str):
+        posicao = self.findPosByName(name)
+        if posicao >= 0:
+                return self.__contatos[posicao]
+        return None
     
-    def addContato (self, name: str, fones: list[Fone]):
-        verificarContato = None
-        for contato in self.__contatos:
+    def findPosByName (self, name: str):
+        for i, contato in enumerate(self.__contatos):
             if contato.get_name() == name:
-                verificarContato = contato
-                break
-        if verificarContato:
+                return i 
+        return -1
+        
+    def addContato (self, name: str, fones: list[Fone]):
+        posicao = self.findPosByName(name)
+        if posicao >= 0:
             for i in fones:
-                verificarContato.addFone(i.get_id(), i.get_number())
+                self.__contatos[posicao].addFone(i.get_id(), i.get_number())
             return
-        if verificarContato is not True:
+        else:
             contato = Contato(name)
             for i in fones:
                 contato.addFone(i.get_id(), i.get_number())
             self.__contatos.append(contato)
+    
+    def rmContato (self, name: str):
+        contato = self.findPosByName(name)
+        if contato >= 0:
+            self.__contatos.pop(contato)
+            return
+        
+    def search (self, pattern: str) -> list[Contato]:
+        resultados = []
+        for contato in self.__contatos:
+            contato_str = str(contato)
+            if pattern in contato_str:
+                resultados.append(contato)
+        return resultados
 
 def main():
     agenda = Agenda()
@@ -79,6 +103,19 @@ def main():
                 agenda.addContato(name, fone)
             elif args[0] == "show":
                 print(agenda)
+            elif args[0] == "rmFone":
+                name = args[1]
+                index = int(args[2])
+                contato = agenda.getContato(name)
+                contato.rmFone(index)
+            elif args[0] == "rm":
+                name = args[1]
+                agenda.rmContato(name)
+            elif args[0] == "search":
+                pattern = args[1]
+                resultados = agenda.search(pattern)
+                for contato in sorted(resultados, key=lambda c: c.get_name()):  # Ordena os resultados
+                        print(contato)
             else:
                 print("fail: comando inválido")
 
