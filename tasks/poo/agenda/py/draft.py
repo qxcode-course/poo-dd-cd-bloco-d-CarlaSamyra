@@ -13,7 +13,7 @@ class Fone:
         return self.__id 
     
     def isValid (self):
-        return all(i.isdigit() for i in self.__number)
+        return self.__number.isdecimal()
 
 class Contato:
     def __init__ (self, name: str): 
@@ -23,7 +23,11 @@ class Contato:
 
     def __str__ (self):
         fones = ", ".join(str(i) for i in self.__fones)
-        return f"- {self.__name} [{fones}]"
+        favorito = "@"
+        if self.__favorited is True:
+            return f"{favorito} {self.__name} [{fones}]"
+        else:
+            return f"- {self.__name} [{fones}]"
     
     def get_name(self):
         return self.__name
@@ -37,6 +41,12 @@ class Contato:
         if 0 <= index and index < len(self.__fones):
             self.__fones.pop(index)
             return
+        
+    def toogleFavorited (self):
+        self.__favorited = not self.__favorited
+
+    def isFavorited (self):
+        return self.__favorited
 
 class Agenda:
     def __init__ (self):
@@ -50,8 +60,8 @@ class Agenda:
         posicao = self.findPosByName(name)
         if posicao >= 0:
                 return self.__contatos[posicao]
-        return None
-    
+        return
+
     def findPosByName (self, name: str):
         for i, contato in enumerate(self.__contatos):
             if contato.get_name() == name:
@@ -83,6 +93,13 @@ class Agenda:
             if pattern in contato_str:
                 resultados.append(contato)
         return resultados
+    
+    def getFavorited (self) -> list[Contato]:
+        favorito = []
+        for contato in self.__contatos:
+            if contato.isFavorited():
+                favorito.append(contato)
+        return favorito
 
 def main():
     agenda = Agenda()
@@ -114,8 +131,18 @@ def main():
             elif args[0] == "search":
                 pattern = args[1]
                 resultados = agenda.search(pattern)
-                for contato in sorted(resultados, key=lambda c: c.get_name()):  # Ordena os resultados
+                for contato in sorted(resultados, key=lambda c: c.get_name()):
                         print(contato)
+            elif args[0] == "tfav":
+                name = args[1]
+                contato = agenda.getContato(name)
+                if contato:
+                    if not contato.isFavorited():
+                        contato.toogleFavorited()
+            elif args[0] == "favs":
+                favoritos = agenda.getFavorited()
+                for nome in sorted(favoritos, key=lambda i: i.get_name()):
+                    print (nome)
             else:
                 print("fail: comando inválido")
 
@@ -123,3 +150,9 @@ def main():
             print(e)
 
 main()
+
+
+
+
+
+
